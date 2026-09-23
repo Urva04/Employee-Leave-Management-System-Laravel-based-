@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LeaveFlow — Employee Leave Management System</title>
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-light: #eef2ff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger:  #ef4444;
+    --dark:    #1e293b;
+    --muted:   #64748b;
+    --bg:      #f5f7fb;
+    --card:    #ffffff;
+    --border:  #e5e7eb;
+  }
+  * { font-family: 'Inter', sans-serif; }
+  body {
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* ---------- LOGIN PAGE ---------- */
+  .login-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,.25);
+    max-width: 900px;
+    width: 100%;
+  }
+  .login-side {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    padding: 50px 40px;
+  }
+  .login-side h2 { font-weight: 800; }
+  .login-side ul { list-style: none; padding: 0; }
+  .login-side ul li { margin: 14px 0; display: flex; align-items: center; gap: 10px; }
+  .login-side ul li i { background: rgba(255,255,255,.2); padding: 8px; border-radius: 50%; }
+  .login-form { padding: 50px 40px; }
+
+  /* ---------- SIDEBAR ---------- */
+  .app { display: none; }
+  .sidebar {
+    width: 260px;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    padding: 24px 16px;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform .3s;
+  }
+  .sidebar .brand {
+    font-size: 1.4rem; font-weight: 800;
+    color: var(--primary);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 12px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .nav-link-custom {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px;
+    color: var(--muted);
+    border-radius: 10px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all .2s;
+    text-decoration: none;
+  }
+  .nav-link-custom:hover { background: var(--primary-light); color: var(--primary); }
+  .nav-link-custom.active {
+    background: var(--primary); color: #fff;
+    box-shadow: 0 4px 12px rgba(79,70,229,.3);
+  }
+  .nav-link-custom i { font-size: 1.1rem; }
+  .nav-section-title {
+    font-size: .7rem; text-transform: uppercase; letter-spacing: 1px;
+    color: #94a3b8; padding: 16px 14px 8px; font-weight: 600;
+  }
+
+  /* ---------- MAIN ---------- */
+  .main { margin-left: 260px; padding: 24px 32px; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fff; padding: 14px 20px; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05); margin-bottom: 24px;
+  }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #ec4899);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+
+  .page-title { font-weight: 700; font-size: 1.6rem; margin-bottom: 4px; }
+  .page-sub   { color: var(--muted); margin-bottom: 24px; }
+
+  /* ---------- CARDS ---------- */
+  .stat-card {
+    background: #fff; border-radius: 14px; padding: 20px;
+    border: 1px solid var(--border); transition: transform .2s, box-shadow .2s;
+    height: 100%;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.06); }
+  .stat-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 14px;
+  }
+  .stat-value { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+  .stat-label { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+  .ic-blue   { background:#eef2ff; color:#4f46e5; }
+  .ic-green  { background:#d1fae5; color:#059669; }
+  .ic-orange { background:#fef3c7; color:#d97706; }
+  .ic-red    { background:#fee2e2; color:#dc2626; }
+  .ic-purple { background:#f3e8ff; color:#9333ea; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px; margin-bottom: 24px;
+  }
+  .panel-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
+
+  /* Status pills */
+  .badge-pill {
+    padding: 5px 12px; border-radius: 20px; font-size: .75rem; font-weight: 600;
+  }
+  .b-pending  { background:#fef3c7; color:#92400e; }
+  .b-approved { background:#d1fae5; color:#065f46; }
+  .b-rejected { background:#fee2e2; color:#991b1b; }
+
+  /* Leave-balance progress */
+  .balance-row { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .balance-row:last-child { border-bottom: 0; }
+  .progress-thin { height: 8px; border-radius: 10px; }
+
+  /* Buttons */
+  .btn-primary { background: var(--primary); border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+  /* Tables */
+  .table thead th { background:#f8fafc; color: var(--muted); font-weight:600; font-size:.85rem; border:0; }
+  .table td { vertical-align: middle; }
+
+  /* Hide pages by default */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Mobile */
+  .menu-toggle { display:none; background:none; border:0; font-size:1.5rem; }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 16px; }
+    .menu-toggle { display:block; }
+    .login-side { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== LOGIN ============================== -->
+<div id="loginPage" class="login-wrapper">
+  <div class="login-card row g-0">
+    <div class="col-md-6 login-side">
+      <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-calendar2-check fs-2 me-2"></i>
+        <h2 class="mb-0">LeaveFlow</h2>
+      </div>
+      <h4 class="fw-bold mb-3">Smart Leave Management</h4>
+      <p class="opacity-75">Streamline your leave requests, approvals & balances — all in one place.</p>
+      <ul class="mt-4">
+        <li><i class="bi bi-check-lg"></i> Apply leave in seconds</li>
+        <li><i class="bi bi-check-lg"></i> Real-time balance tracking</li>
+        <li><i class="bi bi-check-lg"></i> Instant approval notifications</li>
+        <li><i class="bi bi-check-lg"></i> Transparent workflows</li>
+      </ul>
+    </div>
+    <div class="col-md-6 login-form">
+      <h3 class="fw-bold mb-1">Welcome Back 👋</h3>
+      <p class="text-muted mb-4">Sign in to continue to your dashboard</p>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Email</label>
+        <input type="email" id="loginEmail" class="form-control form-control-lg" placeholder="you@company.com" value="john@company.com" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Password</label>
+        <input type="password" class="form-control form-control-lg" placeholder="••••••••" value="password" />
+      </div>
+
+      <label class="form-label fw-semibold">Login as</label>
+      <div class="btn-group w-100 mb-4" role="group">
+        <input type="radio" class="btn-check" name="role" id="roleEmp" checked>
+        <label class="btn btn-outline-primary" for="roleEmp"><i class="bi bi-person"></i> Employee</label>
+        <input type="radio" class="btn-check" name="role" id="roleAdmin">
+        <label class="btn btn-outline-primary" for="roleAdmin"><i class="bi bi-shield-lock"></i> Admin / HR</label>
+      </div>
+
+      <button class="btn btn-primary btn-lg w-100" onclick="doLogin()">
+        Sign In <i class="bi bi-arrow-right ms-1"></i>
+      </button>
+      <p class="text-center text-muted mt-3 mb-0 small">Demo mode — any credentials work</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== APP ============================== -->
+<div id="app" class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <i class="bi bi-calendar2-check"></i> LeaveFlow
+    </div>
+
+    <div class="nav-section-title">Main</div>
+    <a class="nav-link-custom active" data-page="dashboard"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+    <a class="nav-link-custom" data-page="apply" data-emp-only><i class="bi bi-pencil-square"></i> Apply for Leave</a>
+    <a class="nav-link-custom" data-page="myleaves" data-emp-only><i class="bi bi-clock-history"></i> My Leaves</a>
+    <a class="nav-link-custom" data-page="balance" data-emp-only><i class="bi bi-pie-chart"></i> Leave Balance</a>
+
+    <div class="nav-section-title" data-admin-only>Administration</div>
+    <a class="nav-link-custom" data-page="approvals" data-admin-only><i class="bi bi-check2-square"></i> Pending Approvals
+      <span class="badge bg-danger ms-auto" id="pendingBadge">3</span>
+    </a>
+    <a class="nav-link-custom" data-page="employees" data-admin-only><i class="bi bi-people"></i> Employees</a>
+    <a class="nav-link-custom" data-page="reports" data-admin-only><i class="bi bi-bar-chart"></i> Reports</a>
+
+    <div class="nav-section-title">Account</div>
+    <a class="nav-link-custom" data-page="profile"><i class="bi bi-person-circle"></i> Profile</a>
+    <a class="nav-link-custom" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="d-flex align-items-center gap-2">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="bi bi-list"></i></button>
+        <div>
+          <div class="fw-semibold" id="topGreet">Hello, John 👋</div>
+          <small class="text-muted" id="topRole">Employee · Engineering</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light position-relative">
+          <i class="bi bi-bell"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem;">2</span>
+        </button>
+        <div class="avatar" id="topAvatar">JD</div>
+      </div>
+    </div>
+
+    <!-- ========== DASHBOARD ========== -->
+    <section class="page active" id="page-dashboard">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Quick overview of your leave activity</p>
+
+      <div class="row g-3 mb-2" id="statsRow"></div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <div class="panel-title">Recent Leave Requests</div>
+                <small class="text-muted">Your latest applications</small>
+              </div>
+              <button class="btn btn-sm btn-outline-primary" onclick="showPage('myleaves')">View All</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th></tr></thead>
+                <tbody id="recentLeavesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="panel">
+            <div class="panel-title mb-3">Leave Balance Snapshot</div>
+            <div id="balanceSnapshot"></div>
+          </div>
+
+          <div class="panel" data-admin-only>
+            <div class="panel-title mb-3">Team On Leave Today</div>
+            <div class="d-flex align-items-center mb-2">
+              <div class="avatar me-2" style="background:linear-gradient(135deg,#10b981,#3b82f6)">SA</div>
+              <div><div class="fw-semibold">Sara Ahmed</div><small class="text-muted">Sick Leave · returns Tomorrow</small></div>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="avatar me-2" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">MR</div>
+              <div><div class="fw-semibold">Mike Roberts</div><small class="text-muted">Casual Leave · returns Mon</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== APPLY LEAVE ========== -->
+    <section class="page" id="page-apply">
+      <h1 class="page-title">Apply for Leave</h1>
+      <p class="page-sub">Fill the form below to submit a new leave request</p>
+
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <div class="panel">
+            <form id="leaveForm" onsubmit="submitLeave(event)">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Leave Type *</label>
+                  <select class="form-select" id="leaveType" required>
+                    <option value="">Select type</option>
+                    <option>Casual Leave</option>
+                    <option>Sick Leave</option>
+                    <option>Annual Leave</option>
+                    <option>Maternity / Paternity</option>
+                    <option>Unpaid Leave</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Duration</label>
+                  <select class="form-select" id="duration">
+                    <option>Full Day</option>
+                    <option>Half Day - Morning</option>
+                    <option>Half Day - Afternoon</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">From Date *</label>
+                  <input type="date" id="fromDate" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">To Date *</label>
+                  <input type="date" id="toDate" class="form-control" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Reason *</label>
+                  <textarea class="form-control" id="reason" rows="4" placeholder="Briefly describe the reason for your leave..." required></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Reporting Manager</label>
+                  <input type="text" class="form-control" value="Ahmed Khan" disabled>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Contact During Leave</label>
+                  <input type="tel" class="form-control" placeholder="+92 300 0000000">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Attachment (optional)</label>
+                  <input type="file" class="form-control">
+                  <small class="text-muted">Upload medical certificate or supporting docs (PDF/JPG)</small>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send me-1"></i> Submit Request</button>
+                <button type="reset" class="btn btn-outline-secondary">Reset</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="panel">
+            <div class="panel-title mb-3"><i class="bi bi-info-circle text-primary"></i> Quick Info</div>
+            <p class="small text-muted mb-2">📌 Apply at least 3 days in advance for planned leaves.</p>
+            <p class="small text-muted mb-2">📌 Sick leaves require a medical certificate beyond 2 days.</p>
+            <p class="small text-muted mb-2">📌 You will receive email + in-app notifications upon approval.</p>
+            <hr>
+            <div class="panel-title mb-2">Available Balance</div>
+            <div id="applyBalance"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== MY LEAVES ========== -->
+    <section class="page" id="page-myleaves">
+      <h1 class="page-title">My Leave History</h1>
+      <p class="page-sub">All your past and current leave applications</p>
+
+      <div class="panel">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <input type="text" class="form-control" style="max-width:240px" placeholder="🔍 Search...">
+          <select class="form-select" style="max-width:180px">
+            <option>All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option>
+          </select>
+          <select class="form-select" style="max-width:180px">
+            <option>All Types</option><option>Casual</option><option>Sick</option><option>Annual</option>
+          </select>
+          <button class="btn btn-outline-primary ms-auto"><i class="bi bi-download"></i> Export</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead><tr><th>#</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="myLeavesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== BALANCE ========== -->
+    <section class="page" id="page-balance">
+      <h1 class="page-title">Leave Balance</h1>
+      <p class="page-sub">Your entitlement, used and remaining leaves for 2026</p>
+
+      <div class="row g-3" id="balanceCards"></div>
+
+      <div class="panel mt-3">
+        <div class="panel-title mb-3">Detailed Breakdown</div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead><tr><th>Leave Type</th><th>Entitled</th><th>Used</th><th>Pending</th><th>Remaining</th><th>Usage</th></tr></thead>
+            <tbody id="balanceTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== APPROVALS (ADMIN) ========== -->
+    <section class="page" id="page-approvals">
+      <h1 class="page-title">Pending Approvals</h1>
+      <p class="page-sub">Review and act on employee leave requests</p>
+
+      <div class="panel">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr><th>Employee</th><th>Department</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Action</th></tr>
+            </thead>
+            <tbody id="approvalsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== EMPLOYEES (ADMIN) ========== -->
+    <section class="page" id="page-employees">
+      <h1 class="page-title">Employees</h1>
+      <p class="page-sub">Manage employees and view their leave summary</p>
+      <div class="panel">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Joined</th><th>Leaves Used</th><th>Status</th></tr></thead>
+            <tbody id="empBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== REPORTS (ADMIN) ========== -->
+    <section class="page" id="page-reports">
+      <h1 class="page-title">Reports & Analytics</h1>
+      <p class="page-sub">High-level metrics across the organization</p>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3"><div class="stat-card"><div class="stat-icon ic-blue"><i class="bi bi-people"></i></div><div class="stat-value">48</div><div class="stat-label">Total Employees</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-icon ic-green"><i class="bi bi-check2-circle"></i></div><div class="stat-value">126</div><div class="stat-label">Approved (YTD)</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-icon ic-orange"><i class="bi bi-hourglass-split"></i></div><div class="stat-value">8</div><div class="stat-label">Pending</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-icon ic-red"><i class="bi bi-x-circle"></i></div><div class="stat-value">14</div><div class="stat-label">Rejected</div></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title mb-3">Leave Distribution by Department</div>
+        <div id="deptChart"></div>
+      </div>
+    </section>
+
+    <!-- ========== PROFILE ========== -->
+    <section class="page" id="page-profile">
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-sub">Manage your account information</p>
+      <div class="panel">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="avatar" style="width:80px;height:80px;font-size:1.8rem;">JD</div>
+          <div>
+            <h4 class="mb-0 fw-bold">John Doe</h4>
+            <p class="text-muted mb-0">Software Engineer · Engineering</p>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="form-label fw-semibold">Full Name</label><input type="text" class="form-control" value="John Doe"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Email</label><input type="email" class="form-control" value="john@company.com"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Phone</label><input type="tel" class="form-control" value="+92 300 1234567"></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Employee ID</label><input type="text" class="form-control" value="EMP-1024" disabled></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Department</label><input type="text" class="form-control" value="Engineering" disabled></div>
+          <div class="col-md-6"><label class="form-label fw-semibold">Reporting Manager</label><input type="text" class="form-control" value="Ahmed Khan" disabled></div>
+        </div>
+        <button class="btn btn-primary mt-3"><i class="bi bi-check-lg me-1"></i> Save Changes</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================== TOAST ============================== -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index:1100">
+  <div id="toast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Done!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  /* ---------- DEMO DATA ---------- */
+  let currentRole = 'employee';
+
+  const leaveBalances = [
+    { type:'Casual Leave',  entitled:12, used:3, pending:1, color:'primary' },
+    { type:'Sick Leave',    entitled:10, used:2, pending:0, color:'success' },
+    { type:'Annual Leave',  entitled:21, used:7, pending:0, color:'warning' },
+    { type:'Unpaid Leave',  entitled:30, used:0, pending:0, color:'secondary' },
+  ];
+
+  const myLeaves = [
+    { id:'LR-1024', type:'Annual Leave', from:'2026-01-15', to:'2026-01-20', days:6, reason:'Family vacation',           status:'Approved' },
+    { id:'LR-1023', type:'Sick Leave',   from:'2026-02-08', to:'2026-02-09', days:2, reason:'Flu and fever',              status:'Approved' },
+    { id:'LR-1022', type:'Casual Leave', from:'2026-03-12', to:'2026-03-12', days:1, reason:'Personal errand',            status:'Pending'  },
+    { id:'LR-1021', type:'Casual Leave', from:'2026-02-22', to:'2026-02-22', days:1, reason:'Bank work',                  status:'Rejected' },
+    { id:'LR-1020', type:'Annual Leave', from:'2026-04-01', to:'2026-04-05', days:5, reason:'Eid holidays travel',        status:'Approved' },
+  ];
+
+  const pendingApprovals = [
+    { emp:'Sara Ahmed',   dept:'Marketing',   type:'Sick Leave',    from:'2026-03-14', to:'2026-03-15', days:2, reason:'Migraine'           },
+    { emp:'Mike Roberts', dept:'Sales',       type:'Casual Leave',  from:'2026-03-18', to:'2026-03-18', days:1, reason:'Personal work'      },
+    { emp:'Lina Park',    dept:'Engineering', type:'Annual Leave',  from:'2026-04-02', to:'2026-04-09', days:6, reason:'Wedding ceremony'   },
+  ];
+
+  const employees = [
+    { name:'John Doe',     email:'john@company.com',  dept:'Engineering', joined:'2022-06-12', used:12, status:'Active' },
+    { name:'Sara Ahmed',   email:'sara@company.com',  dept:'Marketing',   joined:'2021-03-08', used:9,  status:'On Leave' },
+    { name:'Mike Roberts', email:'mike@company.com',  dept:'Sales',       joined:'2023-01-20', used:5,  status:'Active' },
+    { name:'Lina Park',    email:'lina@company.com',  dept:'Engineering', joined:'2020-11-04', used:14, status:'Active' },
+    { name:'Ahmed Khan',   email:'ahmed@company.com', dept:'Engineering', joined:'2019-07-15', used:7,  status:'Active' },
+    { name:'Priya Sharma', email:'priya@company.com', dept:'HR',          joined:'2022-09-30', used:11, status:'Active' },
+  ];
+
+  /* ---------- LOGIN ---------- */
+  function doLogin() {
+    currentRole = document.getElementById('roleAdmin').checked ? 'admin' : 'employee';
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    applyRoleVisibility();
+    renderAll();
+    if (currentRole === 'admin') {
+      document.getElementById('topGreet').textContent = 'Hello, Admin 👋';
+      document.getElementById('topRole').textContent = 'HR Administrator';
+      document.getElementById('topAvatar').textContent = 'AD';
+    }
+  }
+  function logout() {
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+
+  function applyRoleVisibility() {
+    document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = currentRole==='admin' ? '' : 'none');
+    document.querySelectorAll('[data-emp-only]').forEach(el => el.style.display   = currentRole==='employee' ? '' : 'none');
+  }
+
+  /* ---------- NAV ---------- */
+  document.querySelectorAll('.nav-link-custom[data-page]').forEach(link => {
+    link.addEventListener('click', () => showPage(link.dataset.page));
+  });
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id)?.classList.add('active');
+    document.querySelectorAll('.nav-link-custom').forEach(l => l.classList.remove('active'));
+    document.querySelector(`.nav-link-custom[data-page="${id}"]`)?.classList.add('active');
+    document.getElementById('sidebar').classList.remove('open');
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- RENDERERS ---------- */
+  function renderStats() {
+    const totalEntitled = leaveBalances.reduce((s,b)=>s+b.entitled,0);
+    const totalUsed     = leaveBalances.reduce((s,b)=>s+b.used,0);
+    const totalPending  = leaveBalances.reduce((s,b)=>s+b.pending,0);
+    const remaining     = totalEntitled - totalUsed - totalPending;
+
+    const empStats = [
+      { v: remaining,    l:'Available Days',  i:'bi-calendar-check', c:'ic-blue'   },
+      { v: totalUsed,    l:'Days Used',       i:'bi-calendar-x',     c:'ic-green'  },
+      { v: totalPending, l:'Pending Requests',i:'bi-hourglass-split',c:'ic-orange' },
+      { v: totalEntitled,l:'Total Entitled',  i:'bi-award',          c:'ic-purple' },
+    ];
+    const adminStats = [
+      { v: 48, l:'Total Employees',     i:'bi-people',         c:'ic-blue'   },
+      { v: 3,  l:'Pending Approvals',   i:'bi-hourglass-split',c:'ic-orange' },
+      { v: 5,  l:'On Leave Today',      i:'bi-person-dash',    c:'ic-red'    },
+      { v:126, l:'Approved This Year',  i:'bi-check2-circle',  c:'ic-green'  },
+    ];
+    const stats = currentRole==='admin' ? adminStats : empStats;
+    document.getElementById('statsRow').innerHTML = stats.map(s => `
+      <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon ${s.c}"><i class="bi ${s.i}"></i></div>
+          <div class="stat-value">${s.v}</div>
+          <div class="stat-label">${s.l}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderRecent() {
+    document.getElementById('recentLeavesBody').innerHTML = myLeaves.slice(0,4).map(l => `
+      <tr>
+        <td><strong>${l.type}</strong></td>
+        <td>${l.from}</td>
+        <td>${l.to}</td>
+        <td>${l.days}</td>
+        <td><span class="badge-pill b-${l.status.toLowerCase()}">${l.status}</span></td>
+      </tr>`).join('');
+  }
+
+  function renderBalanceSnapshot() {
+    document.getElementById('balanceSnapshot').innerHTML = leaveBalances.map(b => {
+      const remain = b.entitled - b.used - b.pending;
+      const pct = (b.used / b.entitled) * 100;
+      return `
+        <div class="balance-row">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="fw-semibold">${b.type}</span>
+            <span class="text-muted small">${remain}/${b.entitled} days left</span>
+          </div>
+          <div class="progress progress-thin"><div class="progress-bar bg-${b.color}" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
+    document.getElementById('applyBalance').innerHTML = document.getElementById('balanceSnapshot').innerHTML;
+  }
+
+  function renderMyLeaves() {
+    document.getElementById('myLeavesBody').innerHTML = myLeaves.map((l,i) => `
+      <tr>
+        <td>${l.id}</td>
+        <td><strong>${l.type}</strong></td>
+        <td>${l.from}</td>
+        <td>${l.to}</td>
+        <td>${l.days}</td>
+        <td class="text-muted">${l.reason}</td>
+        <td><span class="badge-pill b-${l.status.toLowerCase()}">${l.status}</span></td>
+        <td>
+          <button class="btn btn-sm btn-light"><i class="bi bi-eye"></i></button>
+          ${l.status==='Pending' ? '<button class="btn btn-sm btn-light text-danger"><i class="bi bi-x-lg"></i></button>' : ''}
+        </td>
+      </tr>`).join('');
+  }
+
+  function renderBalancePage() {
+    document.getElementById('balanceCards').innerHTML = leaveBalances.map(b => {
+      const remain = b.entitled - b.used - b.pending;
+      return `
+      <div class="col-md-6 col-lg-3">
+        <div class="stat-card">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="fw-semibold">${b.type}</span>
+            <span class="badge bg-${b.color}-subtle text-${b.color}">${remain} left</span>
+          </div>
+          <div class="stat-value">${remain}<small class="text-muted fs-6 fw-normal">/${b.entitled}</small></div>
+          <div class="progress progress-thin mt-2"><div class="progress-bar bg-${b.color}" style="width:${(b.used/b.entitled)*100}%"></div></div>
+          <small class="text-muted d-block mt-2">${b.used} used · ${b.pending} pending</small>
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('balanceTableBody').innerHTML = leaveBalances.map(b => {
+      const remain = b.entitled - b.used - b.pending;
+      const pct = (b.used / b.entitled) * 100;
+      return `
+        <tr>
+          <td><strong>${b.type}</strong></td>
+          <td>${b.entitled}</td>
+          <td>${b.used}</td>
+          <td>${b.pending}</td>
+          <td><span class="fw-bold text-${b.color}">${remain}</span></td>
+          <td style="min-width:160px"><div class="progress progress-thin"><div class="progress-bar bg-${b.color}" style="width:${pct}%"></div></div></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderApprovals() {
+    document.getElementById('approvalsBody').innerHTML = pendingApprovals.map((p,i) => `
+      <tr id="appRow-${i}">
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar" style="width:36px;height:36px;font-size:.85rem;">${p.emp.split(' ').map(n=>n[0]).join('')}</div>
+            <strong>${p.emp}</strong>
+          </div>
+        </td>
+        <td>${p.dept}</td>
+        <td>${p.type}</td>
+        <td>${p.from}</td>
+        <td>${p.to}</td>
+        <td>${p.days}</td>
+        <td class="text-muted small">${p.reason}</td>
+        <td>
+          <button class="btn btn-sm btn-success" onclick="actApproval(${i},'Approved')"><i class="bi bi-check-lg"></i> Approve</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="actApproval(${i},'Rejected')"><i class="bi bi-x-lg"></i> Reject</button>
+        </td>
+      </tr>`).join('');
+    document.getElementById('pendingBadge').textContent = pendingApprovals.length;
+  }
+
+  function actApproval(i, action) {
+    const row = document.getElementById('appRow-'+i);
+    row.querySelector('td:last-child').innerHTML = `<span class="badge-pill b-${action.toLowerCase()}">${action}</span>`;
+    showToast(`${action} successfully`);
+  }
+
+  function renderEmployees() {
+    document.getElementById('empBody').innerHTML = employees.map(e => `
+      <tr>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar" style="width:36px;height:36px;font-size:.85rem;">${e.name.split(' ').map(n=>n[0]).join('')}</div>
+            <strong>${e.name}</strong>
+          </div>
+        </td>
+        <td>${e.email}</td>
+        <td>${e.dept}</td>
+        <td>${e.joined}</td>
+        <td>${e.used} days</td>
+        <td><span class="badge-pill ${e.status==='Active'?'b-approved':'b-pending'}">${e.status}</span></td>
+      </tr>`).join('');
+  }
+
+  function renderDeptChart() {
+    const data = [
+      { d:'Engineering', v:42, c:'#4f46e5' },
+      { d:'Marketing',   v:28, c:'#10b981' },
+      { d:'Sales',       v:35, c:'#f59e0b' },
+      { d:'HR',          v:15, c:'#ec4899' },
+      { d:'Finance',     v:22, c:'#06b6d4' },
+    ];
+    const max = Math.max(...data.map(d=>d.v));
+    document.getElementById('deptChart').innerHTML = data.map(d => `
+      <div class="mb-3">
+        <div class="d-flex justify-content-between mb-1">
+          <span class="fw-semibold">${d.d}</span><span class="text-muted">${d.v} days</span>
+        </div>
+        <div class="progress" style="height:14px;border-radius:10px;">
+          <div class="progress-bar" style="width:${(d.v/max)*100}%;background:${d.c}"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  /* ---------- SUBMIT ---------- */
+  function submitLeave(e) {
+    e.preventDefault();
+    const type = document.getElementById('leaveType').value;
+    const from = document.getElementById('fromDate').value;
+    const to   = document.getElementById('toDate').value;
+    const reason = document.getElementById('reason').value;
+    const days = Math.max(1, Math.floor((new Date(to)-new Date(from))/(1000*60*60*24)) + 1);
+
+    myLeaves.unshift({ id:'LR-'+(1024+myLeaves.length+1), type, from, to, days, reason, status:'Pending' });
+    renderMyLeaves(); renderRecent(); renderStats();
+    showToast('Leave application submitted successfully!');
+    document.getElementById('leaveForm').reset();
+    showPage('myleaves');
+  }
+
+  function showToast(msg) {
+    document.getElementById('toastMsg').textContent = msg;
+    new bootstrap.Toast(document.getElementById('toast'), { delay: 3000 }).show();
+  }
+
+  function renderAll() {
+    renderStats(); renderRecent(); renderBalanceSnapshot();
+    renderMyLeaves(); renderBalancePage();
+    renderApprovals(); renderEmployees(); renderDeptChart();
+    showPage(currentRole==='admin' ? 'dashboard' : 'dashboard');
+  }
+</script>
+</body>
+</html>
